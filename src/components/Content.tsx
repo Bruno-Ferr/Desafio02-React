@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 
 import { MovieCard } from './MovieCard';
+import { List, ListRowRenderer } from 'react-virtualized';
 
 import '../styles/content.scss';
+import { Maximize } from 'react-feather';
 
 
 interface GenreResponseProps {
@@ -28,10 +30,8 @@ interface ContentProps {
 
 
 export function Content({ onSelectedGenreId }: ContentProps ) {
-  
   const [movies, setMovies] = useState<MovieProps[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<GenreResponseProps>({} as GenreResponseProps);
-
 
   useEffect(() => {
     api.get<MovieProps[]>(`movies/?Genre_id=${onSelectedGenreId}`).then(response => {
@@ -43,6 +43,16 @@ export function Content({ onSelectedGenreId }: ContentProps ) {
     })
   }, [onSelectedGenreId]);
 
+  const rowRenderer: ListRowRenderer = ({ index, key, style }) =>  {
+    return (
+      <div className="movies-list" key={key} style={style}>
+          {movies.map(movie => (
+            <MovieCard title={movie.Title} poster={movie.Poster} runtime={movie.Runtime} rating={movie.Ratings[0].Value} />
+          ))}
+      </div>
+    )
+  }
+
   return(
     <div className="container">
 
@@ -51,11 +61,13 @@ export function Content({ onSelectedGenreId }: ContentProps ) {
       </header>
 
       <main>
-        <div className="movies-list">
-          {movies.map(movie => (
-            <MovieCard title={movie.Title} poster={movie.Poster} runtime={movie.Runtime} rating={movie.Ratings[0].Value} />
-          ))}
-        </div>
+      <List 
+        height={900}
+        rowHeight={900}
+        width={900}
+        rowCount={1}
+        rowRenderer={rowRenderer}
+      />
       </main>
 
     </div>
